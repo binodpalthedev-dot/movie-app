@@ -1,0 +1,511 @@
+/* App.css - Complete Styling */
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 50%, #0f2027 100%);
+  min-height: 100vh;
+}
+
+/* Background with Wave Effect */
+.page-background {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 50%, #0f2027 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-background::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(135deg, rgba(45, 90, 123, 0.3), rgba(15, 32, 39, 0.3));
+  border-radius: 50% 50% 0 0;
+  transform: scale(1.5) translateY(50px);
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  /* padding-top: 3rem; */
+  /* padding-bottom: 3rem; */
+}
+
+/* SignIn Component Styles */
+.signin-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signin-card {
+  background: rgba(30, 58, 95, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 400px;
+}
+
+.signin-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.signin-input {
+  background: rgba(45, 90, 123, 0.6);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+}
+
+.signin-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.signin-input:focus {
+  background: rgba(45, 90, 123, 0.8);
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  color: white;
+}
+
+.signin-checkbox {
+  margin-right: 8px;
+}
+
+.signin-btn {
+  background: #4CAF50;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 12px;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.signin-btn:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+}
+
+/* Empty State Styles */
+.empty-state-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-title {
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: white;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.add-movie-btn {
+  background: #4CAF50;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.add-movie-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+}
+
+/* Movies List Styles */
+.movies-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  padding-top: 2rem;
+}
+
+.movies-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.movies-plus-icon {
+  margin-left: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.movies-plus-icon:hover {
+  color: #4CAF50;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+/* Movie Card Styles */
+.movie-card {
+  background: rgba(45, 90, 123, 0.3);
+  border-radius: 12px;
+  border: none;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  backdrop-filter: blur(5px);
+}
+
+.movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  background: rgba(45, 90, 123, 0.4);
+}
+
+.movie-poster {
+  height: 300px;
+  overflow: hidden;
+}
+
+.movie-poster img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.movie-card:hover .movie-poster img {
+  transform: scale(1.05);
+}
+
+.movie-card-body {
+  padding: 1rem;
+}
+
+.movie-title {
+  color: white;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+}
+
+.movie-year {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Pagination Styles */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+}
+
+.pagination .page-link {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 16px;
+  margin: 0 5px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.pagination .page-item.active .page-link {
+  background: #4CAF50;
+  border-color: #4CAF50;
+  color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: rgba(255, 255, 255, 0.3);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Movie Form Styles */
+.form-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.form-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 3rem;
+}
+
+.image-upload-area {
+  height: 400px;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  background: rgba(45, 90, 123, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-upload-area:hover {
+  border-color: #4CAF50;
+  background: rgba(45, 90, 123, 0.3);
+}
+
+.image-upload-area.drag-over {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.upload-icon {
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1rem;
+}
+
+.back-icon {
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.form-input {
+  background: rgba(45, 90, 123, 0.6);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-input:focus {
+  background: rgba(45, 90, 123, 0.8);
+  box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  color: white;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.btn-submit {
+  background: #4CAF50;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+}
+
+.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.is-valid {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.signin-btn:disabled {
+  cursor: not-allowed;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.top-50 {
+  top: 50%;
+}
+
+.end-0 {
+  right: 0;
+}
+
+.translate-middle-y {
+  transform: translateY(-50%);
+}
+
+.opacity-75 {
+  opacity: 0.75;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .movies-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .movies-title {
+    font-size: 2rem;
+  }
+  
+  .signin-title, .empty-state-title, .form-title {
+    font-size: 2rem;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+  }
+  
+  .image-upload-area {
+    height: 250px;
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .movies-title {
+    font-size: 1.75rem;
+  }
+  
+  .signin-title, .empty-state-title, .form-title {
+    font-size: 1.75rem;
+  }
+  
+  .signin-card {
+    margin: 1rem;
+  }
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(76, 175, 80, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(76, 175, 80, 0.7);
+}
