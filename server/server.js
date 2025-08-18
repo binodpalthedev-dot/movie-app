@@ -19,7 +19,8 @@ const app = express();
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'https://movie-app-eight-lovat.vercel.app/',
+  origin: "*",
+  // origin: process.env.CLIENT_URL || 'https://movie-app-eight-lovat.vercel.app/',
   credentials: true
 }));
 
