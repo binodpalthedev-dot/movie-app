@@ -19,7 +19,7 @@ const app = express();
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: process.env.CLIENT_URL || 'https://movie-app-eight-lovat.vercel.app/',
   credentials: true
 }));
 
