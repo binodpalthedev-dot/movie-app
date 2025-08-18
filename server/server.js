@@ -23,8 +23,8 @@ app.use(helmet());
 app.use(cors({
   origin: [
     'https://movie-app-eight-lovat.vercel.app',
-    'http://localhost:3000', // for local development
-    'http://localhost:5173', // for Vite dev server
+    // 'http://localhost:3000',
+    // 'http://localhost:5173',
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
