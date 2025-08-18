@@ -18,11 +18,45 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+
+// Replace your current CORS configuration with this:
 app.use(cors({
-  // origin: process.env.CLIENT_URL || 'https://movie-app-eight-lovat.vercel.app/',
-  origin: "*",
-  credentials: true
+  origin: [
+    'https://movie-app-eight-lovat.vercel.app',
+    'http://localhost:3000', // for local development
+    'http://localhost:5173', // for Vite dev server
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie']
 }));
+
+// Add this middleware to handle preflight requests
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'https://movie-app-eight-lovat.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  next();
+});
 
 // Rate limiting
 const limiter = rateLimit({
