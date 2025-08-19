@@ -1,140 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
-
-// Constants
-const VALIDATION_RULES = {
-  email: {
-    required: 'Email is required',
-    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    patternMessage: 'Please enter a valid email address'
-  },
-  password: {
-    required: 'Password is required',
-    minLength: 6,
-    minLengthMessage: 'Password must be at least 6 characters long'
-  }
-};
-
-const ERROR_MESSAGES = {
-  'invalid-email': 'Invalid email address',
-  'user-not-found': 'No account found with this email',
-  'wrong-password': 'Incorrect password',
-  'too-many-requests': 'Too many failed attempts. Please try again later.',
-  'user-disabled': 'This account has been disabled',
-  default: 'Sign in failed. Please try again.'
-};
-
-// Custom hooks for form validation
-const useFormValidation = () => {
-  const validateEmail = useCallback((email) => {
-    const rules = VALIDATION_RULES.email;
-    if (!email.trim()) return rules.required;
-    if (!rules.pattern.test(email)) return rules.patternMessage;
-    return '';
-  }, []);
-
-  const validatePassword = useCallback((password) => {
-    const rules = VALIDATION_RULES.password;
-    if (!password) return rules.required;
-    if (password.length < rules.minLength) return rules.minLengthMessage;
-    return '';
-  }, []);
-
-  const validateField = useCallback((name, value) => {
-    switch (name) {
-      case 'email':
-        return validateEmail(value);
-      case 'password':
-        return validatePassword(value);
-      default:
-        return '';
-    }
-  }, [validateEmail, validatePassword]);
-
-  return { validateField, validateEmail, validatePassword };
-};
-
-// Input component for better reusability
-const FormInput = React.memo(({ 
-  type, 
-  name, 
-  placeholder, 
-  value, 
-  onChange, 
-  onBlur, 
-  error, 
-  touched, 
-  showPassword,
-  onTogglePassword,
-  icon: Icon 
-}) => {
-  const inputType = type === 'password' && showPassword ? 'text' : type;
-  const hasError = touched && error;
-  const isValid = touched && !error && value;
-
-  return (
-    <div className="mb-4">
-      <div className="relative">
-        {Icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-gray-400" />
-          </div>
-        )}
-        
-        <input
-          type={inputType}
-          name={name}
-          className={`
-            w-full px-4 py-3 ${Icon ? 'pl-10' : ''} ${type === 'password' ? 'pr-10' : ''} 
-            text-white bg-gray-800 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200
-            ${hasError 
-              ? 'border-red-500 focus:ring-red-500/50' 
-              : isValid 
-                ? 'border-green-500 focus:ring-green-500/50'
-                : 'border-gray-600 focus:ring-blue-500/50 focus:border-blue-500'
-            }
-          `}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          required
-          autoComplete={type === 'email' ? 'email' : 'current-password'}
-          aria-describedby={hasError ? `${name}-error` : undefined}
-          aria-invalid={hasError}
-        />
-
-        {type === 'password' && (
-          <button
-            type="button"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300"
-            onClick={onTogglePassword}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-          >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-          </button>
-        )}
-
-        {isValid && (
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-          </div>
-        )}
-      </div>
-      
-      {hasError && (
-        <div className="flex items-center mt-2 text-red-400 text-sm" id={`${name}-error`}>
-          <AlertCircle className="h-4 w-4 mr-1" />
-          {error}
-        </div>
-      )}
-    </div>
-  );
-});
-
-FormInput.displayName = 'FormInput';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -150,9 +16,33 @@ const SignIn = () => {
 
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const { validateField, validateEmail, validatePassword } = useFormValidation();
 
-  // Memoized form validation
+  // Validation functions
+  const validateEmail = useCallback((email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return 'Email is required';
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    return '';
+  }, []);
+
+  const validatePassword = useCallback((password) => {
+    if (!password) return 'Password is required';
+    if (password.length < 6) return 'Password must be at least 6 characters long';
+    return '';
+  }, []);
+
+  const validateField = useCallback((name, value) => {
+    switch (name) {
+      case 'email':
+        return validateEmail(value);
+      case 'password':
+        return validatePassword(value);
+      default:
+        return '';
+    }
+  }, [validateEmail, validatePassword]);
+
+  // Memoized form validation to prevent unnecessary recalculations
   const isFormValid = useMemo(() => {
     return formData.email && 
            formData.password && 
@@ -212,14 +102,36 @@ const SignIn = () => {
     setShowPassword(prev => !prev);
   }, []);
 
+  const getInputClassName = useCallback((fieldName) => {
+    let className = "form-control form-control-lg signin-input";
+    
+    if (touched[fieldName]) {
+      if (fieldErrors[fieldName]) {
+        className += " is-invalid";
+      } else if (formData[fieldName]) {
+        className += " is-valid";
+      }
+    }
+    
+    return className;
+  }, [touched, fieldErrors, formData]);
+
   const getErrorMessage = useCallback((error) => {
-    if (!error?.message) return ERROR_MESSAGES.default;
+    if (!error?.message) return 'Sign in failed. Please try again.';
     
-    const errorKey = Object.keys(ERROR_MESSAGES).find(key => 
-      error.message.includes(key)
-    );
+    if (error.message.includes('invalid-email')) {
+      return 'Invalid email address';
+    } else if (error.message.includes('user-not-found')) {
+      return 'No account found with this email';
+    } else if (error.message.includes('wrong-password')) {
+      return 'Incorrect password';
+    } else if (error.message.includes('too-many-requests')) {
+      return 'Too many failed attempts. Please try again later.';
+    } else if (error.message.includes('user-disabled')) {
+      return 'This account has been disabled';
+    }
     
-    return ERROR_MESSAGES[errorKey] || ERROR_MESSAGES.default;
+    return 'Sign in failed. Please try again.';
   }, []);
 
   const handleSubmit = useCallback(async (e) => {
@@ -251,105 +163,120 @@ const SignIn = () => {
   }, [formData, validateForm, signIn, navigate, getErrorMessage]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-gray-400">Sign in to your account</p>
-          </div>
-          
-          {errorText && (
-            <div className="mb-6 p-4 bg-red-900/50 border border-red-500 rounded-lg" role="alert">
-              <div className="flex items-center text-red-200">
-                <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span className="text-sm">{errorText}</span>
+    <div className="page-background">
+      <div className="signin-container">
+        <div className="card signin-card">
+          <div className="card-body p-5">
+            <h2 className="signin-title">Sign in</h2>
+            
+            {errorText && (
+              <div className="alert alert-danger" role="alert">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                {errorText}
               </div>
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit} noValidate>
-            <FormInput
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={fieldErrors.email}
-              touched={touched.email}
-              icon={Mail}
-            />
+            )}
+            
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="mb-3">
+                <div className="position-relative">
+                  <input
+                    type="email"
+                    name="email"
+                    className={getInputClassName('email')}
+                    placeholder="Email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    required
+                    autoComplete="email"
+                    aria-describedby={fieldErrors.email ? "email-error" : undefined}
+                    aria-invalid={!!(touched.email && fieldErrors.email)}
+                  />
+                  {touched.email && !fieldErrors.email && formData.email && (
+                    <div className="position-absolute top-50 end-0 translate-middle-y me-3">
+                      <i className="fas fa-check text-success"></i>
+                    </div>
+                  )}
+                </div>
+                {fieldErrors.email && touched.email && (
+                  <div className="invalid-feedback d-block" id="email-error">
+                    <i className="fas fa-exclamation-circle me-1"></i>
+                    {fieldErrors.email}
+                  </div>
+                )}
+              </div>
 
-            <FormInput
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={fieldErrors.password}
-              touched={touched.password}
-              showPassword={showPassword}
-              onTogglePassword={handleTogglePassword}
-              icon={Lock}
-            />
+              <div className="mb-4">
+                <div className="position-relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    className={getInputClassName('password')}
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    required
+                    autoComplete="current-password"
+                    aria-describedby={fieldErrors.password ? "password-error" : undefined}
+                    aria-invalid={!!(touched.password && fieldErrors.password)}
+                  />
+                  <button
+                    type="button"
+                    className="position-absolute top-50 end-0 translate-middle-y me-3 btn btn-sm p-0 border-0 bg-transparent"
+                    onClick={handleTogglePassword}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    style={{ zIndex: 5 }}
+                  >
+                    <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
+                  </button>
+                  {touched.password && !fieldErrors.password && formData.password && (
+                    <div className="position-absolute top-50 translate-middle-y me-5" style={{ right: '2rem' }}>
+                      <i className="fas fa-check text-success"></i>
+                    </div>
+                  )}
+                </div>
+                {fieldErrors.password && touched.password && (
+                  <div className="invalid-feedback d-block" id="password-error">
+                    <i className="fas fa-exclamation-circle me-1"></i>
+                    {fieldErrors.password}
+                  </div>
+                )}
+              </div>
 
-            <div className="flex items-center justify-between mb-6">
-              <label className="flex items-center">
+              <div className="form-check mb-4">
                 <input
+                  className="form-check-input signin-checkbox"
                   type="checkbox"
                   name="remember"
+                  id="rememberMe"
                   checked={formData.remember}
                   onChange={handleChange}
-                  className="rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-800"
                 />
-                <span className="ml-2 text-sm text-gray-300">Remember me</span>
-              </label>
-              
-              <button
-                type="button"
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                onClick={() => {/* Handle forgot password */}}
-              >
-                Forgot password?
-              </button>
-            </div>
+                <label
+                  className="form-check-label text-white"
+                  htmlFor="rememberMe"
+                >
+                  Remember me
+                </label>
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading || !isFormValid}
-              className={`
-                w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 
-                text-white font-medium rounded-lg transition-all duration-200
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800
-                disabled:cursor-not-allowed disabled:opacity-50
-                ${loading ? 'cursor-wait' : ''}
-              `}
-              aria-describedby="submit-help"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Signing in...
-                </div>
-              ) : (
-                'Sign In'
-              )}
-            </button>
-          </form>
-          
-          <div className="mt-6 text-center">
-            <p className="text-gray-400 text-sm">
-              Don't have an account?{' '}
               <button
-                type="button"
-                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-                onClick={() => {/* Handle sign up navigation */}}
+                type="submit"
+                className={`btn btn-lg w-100 signin-btn ${!isFormValid || loading ? 'opacity-75' : ''}`}
+                disabled={loading || !isFormValid}
+                aria-describedby="submit-help"
               >
-                Sign up
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2 text-white" role="status" aria-hidden="true"></span>
+                    <span className='text-white'>Signing in...</span>
+                  </>
+                ) : (
+                  'Login'
+                )}
               </button>
-            </p>
+            </form>
           </div>
         </div>
       </div>
