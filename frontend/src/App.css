@@ -92,6 +92,7 @@ body {
 .signin-btn {
   background: #4CAF50;
   border: none;
+  color: white;
   border-radius: 8px;
   font-weight: 600;
   padding: 12px;
