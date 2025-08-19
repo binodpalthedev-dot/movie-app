@@ -11,6 +11,13 @@ export const AuthProvider = ({ children }) => {
   const didFetch = useRef(false);
   const isLoading = useRef(false);
 
+  // Check if JWT cookie exists
+  const hasJWTCookie = () => {
+    return document.cookie.split(';').some(cookie => 
+      cookie.trim().startsWith('jwt=')
+    );
+  };
+
   useEffect(() => {
     if (didFetch.current || isLoading.current) return;
     
@@ -19,13 +26,20 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
+        // Only make API call if cookie exists
+        if (!hasJWTCookie()) {
+          setUser(null);
+          setIsAuthenticated(false);
+          setInitializing(false);
+          isLoading.current = false;
+          return;
+        }
+
         const data = await authService.getMe();
-        setUser(data);
+        setUser(data.user);
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -54,9 +68,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // API call fail ho bhi jaye to local state clear kar do
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
       setUser(null);
       setIsAuthenticated(false);
       // Reset refs for potential re-login
@@ -72,12 +83,10 @@ export const AuthProvider = ({ children }) => {
     isLoading.current = true;
     try {
       const data = await authService.getMe();
-      setUser(data);
+      setUser(data.user);
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Auth refresh failed:', error);
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
       setUser(null);
       setIsAuthenticated(false);
     } finally {
