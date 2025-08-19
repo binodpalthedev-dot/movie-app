@@ -93,16 +93,7 @@ const MoviesPage = () => {
   // Show empty state if no movies (with better checks)
   if (!movies || !Array.isArray(movies) || movies.length === 0) {
     return (
-      <div>
-        <div className="alert alert-info m-3">
-          <h6>Debug Information:</h6>
-          <p>Movies: {movies ? JSON.stringify(movies) : 'null/undefined'}</p>
-          <p>Is Array: {Array.isArray(movies) ? 'Yes' : 'No'}</p>
-          <p>Length: {movies?.length || 0}</p>
-          <p>User ID: {user?.uid || 'No user ID'}</p>
-        </div>
         <EmptyState />
-      </div>
     );
   }
 
