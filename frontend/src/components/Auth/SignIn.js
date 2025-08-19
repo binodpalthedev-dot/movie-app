@@ -145,7 +145,7 @@ const SignIn = () => {
       <div className="signin-container">
         <div className="card signin-card">
           <div className="card-body p-5">
-            <h2 className="mb-4 text-center">Sign In</h2>
+            <h2 className="signin-title text-center">Sign In</h2>
 
             {errorText && (
               <div className="alert alert-danger">{errorText}</div>
@@ -219,7 +219,7 @@ const SignIn = () => {
               {/* Submit */}
               <button
                 type="submit"
-                className="btn btn-primary w-100"
+                className="signin-btn"
                 disabled={loading || !isFormValid}
               >
                 {loading ? "Signing in..." : "Sign In"}
