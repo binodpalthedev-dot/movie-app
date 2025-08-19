@@ -23,9 +23,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
         setIsAuthenticated(true);
       } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
+        console.log('Auth check failed:', error);
         setUser(null);
         setIsAuthenticated(false);
       } finally {
