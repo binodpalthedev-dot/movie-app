@@ -1,5 +1,5 @@
 // components/Movies/MoviesList.js
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { LogOut, PlusCircleIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useMovies } from '../../context/MoviesContext';
@@ -14,25 +14,32 @@ const MoviesList = () => {
   const { movies } = useMovies();
   const navigate = useNavigate();
 
-  const indexOfLastMovie = currentPage * moviesPerPage;
-  const indexOfFirstMovie = indexOfLastMovie - moviesPerPage;
-  const currentMovies = movies.length > 0 ? movies.slice(indexOfFirstMovie, indexOfLastMovie):[];
-  const totalPages = Math.ceil(movies.length / moviesPerPage);
+  // ✅ Memoized calculations
+  const indexOfLastMovie = useMemo(() => currentPage * moviesPerPage, [currentPage, moviesPerPage]);
+  const indexOfFirstMovie = useMemo(() => indexOfLastMovie - moviesPerPage, [indexOfLastMovie, moviesPerPage]);
 
-  const handleLogout = async () => {
+  const currentMovies = useMemo(() => {
+    return movies.length > 0 
+      ? movies.slice(indexOfFirstMovie, indexOfLastMovie) 
+      : [];
+  }, [movies, indexOfFirstMovie, indexOfLastMovie]);
+
+  const totalPages = useMemo(() => Math.ceil(movies.length / moviesPerPage), [movies.length, moviesPerPage]);
+
+  // ✅ Memoized handlers
+  const handleLogout = useCallback(async () => {
     try {
       await signOut();
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Logout failed:', error);
-      // Force redirect even if logout API fails
       navigate('/', { replace: true });
     }
-  };
+  }, [signOut, navigate]);
 
-  const handleAddMovie = () => {
+  const handleAddMovie = useCallback(() => {
     navigate('/create');
-  };
+  }, [navigate]);
 
   return (
     <div className="page-background">
@@ -58,12 +65,12 @@ const MoviesList = () => {
         </div>
 
         <div className="row">
-          {currentMovies.length == 0 ? (
+          {currentMovies.length === 0 ? (
             <div className="col-12 text-center py-5">
               <p className="movie-title">No movies available</p>
             </div>
           ) : (
-            currentMovies.map((movie,key) => (
+            currentMovies.map((movie, key) => (
               <MovieCard key={key} movie={movie} />
             ))
           )}
