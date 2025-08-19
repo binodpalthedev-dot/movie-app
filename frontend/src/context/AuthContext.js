@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const isLoading = useRef(false);
+  const justLoggedIn = useRef(false); // Track recent login
 
   // Check if JWT cookie exists
   const hasJWTCookie = () => {
@@ -20,6 +21,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (isLoading.current) return;
+    
+    // Skip getMe call if user just logged in
+    if (justLoggedIn.current) {
+      justLoggedIn.current = false;
+      setInitializing(false);
+      return;
+    }
     
     isLoading.current = true;
 
@@ -61,6 +69,7 @@ export const AuthProvider = ({ children }) => {
       if (data && data.user) {
         setUser(data.user);
         setIsAuthenticated(true);
+        justLoggedIn.current = true; // Set flag to skip next getMe call
       }
       return data;
     } catch (error) {
@@ -77,6 +86,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
       isLoading.current = false;
+      justLoggedIn.current = false; // Reset flag on logout
     }
   };
 
