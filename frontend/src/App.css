@@ -385,9 +385,11 @@ body {
   transition: all 0.3s ease;
 }
 
-.btn-submit:disabled {
-  color: rgba(255, 255, 255, 255);
+.btn-submit:disabled,
+.btn-cancel:disabled {
+  color: rgba(255, 255, 255, 1); /* ✅ pure white */
 }
+
 
 .btn-submit:hover {
   background: #45a049;
