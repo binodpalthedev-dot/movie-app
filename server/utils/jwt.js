@@ -19,11 +19,10 @@ const setTokenCookie = (res, token, remember = false) => {
 
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'None',
+    secure: truw,
+    sameSite: isProduction ? 'None' : 'Lax',
     maxAge,
-    path: '/',
-    domain: '.onrender.com'
+    path: '/'
   });
 };
 
@@ -33,10 +32,9 @@ const clearTokenCookie = (res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
     secure: true,
-    sameSite: 'None',
+    sameSite: isProduction ? 'None' : 'Lax',
     expires: new Date(0),
-    path: '/',
-    clearTokenCookie
+    path: '/'
   });
 };
 

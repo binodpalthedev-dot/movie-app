@@ -39,7 +39,9 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
-        if (!hasJWTCookie()) {
+        const jwtCookie = hasJWTCookie();
+        if (!jwtCookie) {
+          alert();
           console.log('No JWT cookie found');
           setUser(null);
           setIsAuthenticated(false);
@@ -106,7 +108,8 @@ export const AuthProvider = ({ children }) => {
     
     isLoading.current = true;
     try {
-      if (!hasJWTCookie()) {
+      const jwtCookie = hasJWTCookie();
+      if (!jwtCookie) {
         setUser(null);
         setIsAuthenticated(false);
         return;
