@@ -22,7 +22,8 @@ const setTokenCookie = (res, token, remember = false) => {
     secure: true,
     sameSite: 'None',
     maxAge,
-    path: '/'
+    path: '/',
+    domain: '.onrender.com'
   });
 };
 
@@ -34,7 +35,8 @@ const clearTokenCookie = (res) => {
     secure: true,
     sameSite: 'None',
     expires: new Date(0),
-    path: '/'
+    path: '/',
+    clearTokenCookie
   });
 };
 
