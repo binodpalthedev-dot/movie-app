@@ -19,8 +19,8 @@ const setTokenCookie = (res, token, remember = false) => {
 
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'None' : 'Lax',
+    secure: truw,
+    sameSite: 'None',
     maxAge,
     path: '/'
   });
@@ -31,8 +31,8 @@ const clearTokenCookie = (res) => {
   
   res.cookie('jwt', '', {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'None' : 'Lax',
+    secure: true,
+    sameSite: 'None',
     expires: new Date(0),
     path: '/'
   });
