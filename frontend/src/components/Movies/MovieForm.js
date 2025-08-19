@@ -413,13 +413,13 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
                   >
                     {loading ? 'Saving...' : (isEdit ? 'Update' : 'Submit')}
                   </button>
-                  <button 
+                  { isEdit ?? <button 
                     type="button" 
                     className="btn btn-danger"
                     onClick={handleDelete}
                   >
                     Delete Movie ?
-                  </button>
+                  </button>}
                 </div>
               </div>
             </div>
