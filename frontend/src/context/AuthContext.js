@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
         setIsAuthenticated(true);
       } catch (error) {
-        console.log('Auth check failed:', error);
+        console.log('User not logged in:');
         setUser(null);
         setIsAuthenticated(false);
       } finally {
