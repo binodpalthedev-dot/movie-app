@@ -1,38 +1,45 @@
-// context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); 
-  const [initializing, setInitializing] = useState(true); 
-  const [isAuthenticated, setIsAuthenticated] = useState(false); 
+  const [user, setUser] = useState(null);
+  const [initializing, setInitializing] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const didFetch = useRef(false);
   const isLoading = useRef(false);
 
-  useEffect(() => {
-    if (didFetch.current || isLoading.current) return; 
+  // Check if JWT cookie exists
+  const hasJWTCookie = () => {
+    return document.cookie.split(';').some(cookie => 
+      cookie.trim().startsWith('jwt=')
+    );
+  };
 
+  useEffect(() => {
+    if (didFetch.current || isLoading.current) return;
+    
     didFetch.current = true;
     isLoading.current = true;
 
     const fetchUser = async () => {
       try {
-        console.log("Checking authentication...");
-        const data = await authService.getMe(); 
-        console.log("User data received:", data);
+        // Only make API call if cookie exists
+        if (!hasJWTCookie()) {
+          setUser(null);
+          setIsAuthenticated(false);
+          setInitializing(false);
+          isLoading.current = false;
+          return;
+        }
 
-        const userData = data.user || data;
-        setUser(userData);
+        const data = await authService.getMe();
+        setUser(data.user);
         setIsAuthenticated(true);
       } catch (error) {
-        console.error("Auth check failed:", error);
-
-        localStorage.removeItem("token");
-        sessionStorage.removeItem("token");
-
+        console.error('Auth check failed:', error);
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -46,63 +53,40 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password, remember) => {
     try {
-      console.log("Signing in with:", email);
       const data = await authService.login({ email, password, remember });
-      console.log("Login successful:", data);
-
       setUser(data.user);
       setIsAuthenticated(true);
-
-      if (data.token) {
-        if (remember) {
-          localStorage.setItem("token", data.token);
-        } else {
-          sessionStorage.setItem("token", data.token);
-        }
-      }
-
       return data;
     } catch (error) {
-      console.error("Login failed:", error);
       throw error;
     }
   };
 
   const signOut = async () => {
     try {
-      console.log("Logging out...");
       await authService.logout();
-      console.log("Logout API success");
     } catch (error) {
-      console.error("Logout API error:", error);
+      console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem("token");
-      sessionStorage.removeItem("token");
-
       setUser(null);
       setIsAuthenticated(false);
-
+      // Reset refs for potential re-login
       didFetch.current = false;
       isLoading.current = false;
     }
   };
 
+  // Manual refresh function
   const refreshAuth = async () => {
     if (isLoading.current) return;
-
+    
     isLoading.current = true;
     try {
-      console.log("Refreshing auth...");
       const data = await authService.getMe();
-      console.log("Refresh response:", data);
-
-      const userData = data.user || data;
-      setUser(userData);
+      setUser(data.user);
       setIsAuthenticated(true);
     } catch (error) {
-      console.error("Auth refresh failed:", error);
-      localStorage.removeItem("token");
-      sessionStorage.removeItem("token");
+      console.error('Auth refresh failed:', error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -111,16 +95,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        initializing,
-        signIn,
-        signOut,
-        refreshAuth,
-      }}
-    >
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      initializing, 
+      signIn, 
+      signOut,
+      refreshAuth 
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -129,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
