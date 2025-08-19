@@ -7,9 +7,15 @@ const EmptyState = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
 
-  const handleLogout = () => {
-    signOut();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Force redirect even if logout API fails
+      navigate('/', { replace: true });
+    }
   };
 
   return (

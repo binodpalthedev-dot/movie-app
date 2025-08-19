@@ -19,9 +19,15 @@ const MoviesList = () => {
   const currentMovies = movies.length > 0 ? movies.slice(indexOfFirstMovie, indexOfLastMovie):[];
   const totalPages = Math.ceil(movies.length / moviesPerPage);
 
-  const handleLogout = () => {
-    signOut();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Force redirect even if logout API fails
+      navigate('/', { replace: true });
+    }
   };
 
   const handleAddMovie = () => {
