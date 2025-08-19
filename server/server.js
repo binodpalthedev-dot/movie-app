@@ -72,20 +72,20 @@ const createDummyUser = async () => {
     const existingUser = await User.findOne({ email: 'test@example.com' });
 
     if (existingUser) {
-      console.log(`✅ Dummy user already exists: ${existingUser.email}`);
+      console.log(`Dummy user already exists: ${existingUser.email}`);
       return;
     }
 
     const dummyUser = new User({
       name: 'Test User',
       email: 'test@example.com',
-      password: 'password123', // 🔥 Hashing model middleware handle karega
+      password: 'password123', // Hashing will be handled by model middleware
     });
 
     await dummyUser.save();
-    console.log('🎉 Dummy user created successfully!');
+    console.log('Dummy user created successfully!');
   } catch (error) {
-    console.error('❌ Error creating dummy user:', error.message);
+    console.error('Error creating dummy user:', error.message);
   }
 };
 
@@ -93,14 +93,14 @@ const createDummyUser = async () => {
 const startServer = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB Connected');
+    console.log('MongoDB Connected');
 
     await createDummyUser();
 
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (err) {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('MongoDB connection error:', err.message);
     process.exit(1);
   }
 };
