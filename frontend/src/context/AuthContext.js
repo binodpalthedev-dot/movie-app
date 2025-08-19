@@ -8,73 +8,56 @@ export const AuthProvider = ({ children }) => {
   const [initializing, setInitializing] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const didFetch = useRef(false);
   const isLoading = useRef(false);
 
-  // Improved cookie check function
+  // Check if JWT cookie exists
   const hasJWTCookie = () => {
-    if (typeof document === 'undefined') return false;
-    return document.cookie
-      .split(';')
-      .some(cookie => cookie.trim().startsWith('jwt=') && cookie.trim().length > 4);
+    return document.cookie.split(';').some(cookie => 
+      cookie.trim().startsWith('jwt=')
+    );
   };
 
-  // Initialize auth state on mount
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (isLoading.current) return;
-      
-      isLoading.current = true;
-      
+    if (didFetch.current || isLoading.current) return;
+    
+    didFetch.current = true;
+    isLoading.current = true;
+
+    const fetchUser = async () => {
       try {
-        // Check if JWT cookie exists
+        // Only make API call if cookie exists
         if (!hasJWTCookie()) {
           setUser(null);
           setIsAuthenticated(false);
+          setInitializing(false);
+          isLoading.current = false;
           return;
         }
 
-        // Attempt to fetch user data
         const data = await authService.getMe();
-        if (data && data.user) {
-          setUser(data.user);
-          setIsAuthenticated(true);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
+        setUser(data.user);
+        setIsAuthenticated(true);
       } catch (error) {
-        console.error('Auth initialization failed:', error);
+        console.error('Auth check failed:', error);
         setUser(null);
         setIsAuthenticated(false);
-        
-        // If auth fails, clear any invalid cookies
-        if (hasJWTCookie()) {
-          try {
-            await authService.logout();
-          } catch (logoutError) {
-            console.error('Failed to clear invalid session:', logoutError);
-          }
-        }
       } finally {
         setInitializing(false);
         isLoading.current = false;
       }
     };
 
-    initializeAuth();
-  }, []); // Remove didFetch dependency
+    fetchUser();
+  }, []);
 
   const signIn = async (email, password, remember) => {
     try {
       const data = await authService.login({ email, password, remember });
-      if (data && data.user) {
-        setUser(data.user);
-        setIsAuthenticated(true);
-      }
+      setUser(data.user);
+      setIsAuthenticated(true);
       return data;
     } catch (error) {
-      setUser(null);
-      setIsAuthenticated(false);
       throw error;
     }
   };
@@ -87,6 +70,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
+      // Reset refs for potential re-login
+      didFetch.current = false;
+      isLoading.current = false;
     }
   };
 
@@ -96,20 +82,9 @@ export const AuthProvider = ({ children }) => {
     
     isLoading.current = true;
     try {
-      if (!hasJWTCookie()) {
-        setUser(null);
-        setIsAuthenticated(false);
-        return;
-      }
-
       const data = await authService.getMe();
-      if (data && data.user) {
-        setUser(data.user);
-        setIsAuthenticated(true);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+      setUser(data.user);
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Auth refresh failed:', error);
       setUser(null);
@@ -118,18 +93,6 @@ export const AuthProvider = ({ children }) => {
       isLoading.current = false;
     }
   };
-
-  // Listen for storage events to sync auth across tabs
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'auth_change') {
-        refreshAuth();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
 
   return (
     <AuthContext.Provider value={{ 
