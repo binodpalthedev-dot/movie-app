@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -131,14 +131,10 @@ const SignIn = () => {
     [touched, fieldErrors, formData]
   );
 
-  const isFormValid = useMemo(() => {
-  return (
-    formData.email &&
-    formData.password &&
-    (!touched.email || !fieldErrors.email) &&
-    (!touched.password || !fieldErrors.password)
-  );
-}, [formData, fieldErrors, touched]);
+  const isFormValid = formData.email.trim() !== "" &&
+    formData.password.trim() !== "" &&
+    !fieldErrors.email &&
+    !fieldErrors.password;
 
 
   return (
