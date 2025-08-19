@@ -13,16 +13,12 @@ export const AuthProvider = ({ children }) => {
 
   const hasJWTCookie = () => {
     if (typeof document === 'undefined') return false;
+    
+    // Relaxed cookie check - even if empty value exists
     const cookies = document.cookie;
-    console.log('All cookies:', cookies);
+    const hasJWT = cookies.includes('jwt=');
     
-    const hasJWT = cookies.split(';').some(cookie => {
-      const trimmed = cookie.trim();
-      console.log('Checking cookie:', trimmed);
-      return trimmed.startsWith('jwt=') && trimmed.length > 4;
-    });
-    
-    console.log('Has JWT cookie:', hasJWT);
+    console.log('Cookie check result:', hasJWT);
     return hasJWT;
   };
 
