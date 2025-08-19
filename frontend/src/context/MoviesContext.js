@@ -23,57 +23,32 @@ export const MoviesProvider = ({ children }) => {
   const fetchMovies = async () => {
     if (isLoading || !isAuthenticated) return;
     
-    console.log('Fetching movies for user:', user?.email);
     setIsLoading(true);
     setError(null);
 
     try {
-      // Add delay for demo purposes (you can remove this)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       const data = await movieService.getMovies();
-      console.log('Raw data from movieService:', data);
-      
       const moviesArray = Array.isArray(data) ? data : data.movies || [];
-      console.log('Processed movies array:', moviesArray);
-      
       setMovies(moviesArray);
     } catch (error) {
-      console.error('Movies fetching failed:', error);
       setError(error.message || 'Failed to fetch movies');
-      setMovies([]); // Clear movies on error
+      setMovies([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Effect to handle authentication changes
   useEffect(() => {
-    console.log('Auth state changed:', { 
-      isAuthenticated, 
-      user: user?.email, 
-      initializing,
-      didFetchForUser: didFetchForUser.current 
-    });
-
-    if (initializing) {
-      // Still initializing, don't do anything
-      return;
-    }
+    if (initializing) return;
 
     if (isAuthenticated && user) {
-      // User is authenticated
       const currentUserId = user.uid || user.email;
       
       if (didFetchForUser.current !== currentUserId) {
-        // First time fetching for this user, or different user
-        console.log('Fetching movies for new/different user');
         didFetchForUser.current = currentUserId;
         fetchMovies();
       }
     } else {
-      // User is not authenticated, clear data
-      console.log('User not authenticated, clearing movies');
       setMovies([]);
       setIsLoading(false);
       setError(null);
@@ -85,11 +60,10 @@ export const MoviesProvider = ({ children }) => {
     try {
       setError(null);
       await movieService.createMovie(movie);
-      await fetchMovies(); // Refetch to get updated list
+      await fetchMovies();
     } catch (error) {
-      console.error("Adding movie failed:", error);
       setError(error.message || 'Failed to add movie');
-      throw error; // Re-throw so UI can handle it
+      throw error;
     }
   };
 
@@ -97,9 +71,8 @@ export const MoviesProvider = ({ children }) => {
     try {
       setError(null);
       await movieService.updateMovie(id, updatedMovie);
-      await fetchMovies(); // Refetch to get updated list
+      await fetchMovies();
     } catch (error) {
-      console.error("Updating movie failed:", error);
       setError(error.message || 'Failed to update movie');
       throw error;
     }
@@ -109,9 +82,8 @@ export const MoviesProvider = ({ children }) => {
     try {
       setError(null);
       await movieService.deleteMovie(id);
-      await fetchMovies(); // Refetch to get updated list
+      await fetchMovies();
     } catch (error) {
-      console.error("Deleting movie failed:", error);
       setError(error.message || 'Failed to delete movie');
       throw error;
     }
@@ -121,7 +93,6 @@ export const MoviesProvider = ({ children }) => {
     return movies.find(movie => movie._id === id || movie.id === id);
   };
 
-  // Manual refresh function
   const refreshMovies = async () => {
     if (isAuthenticated) {
       await fetchMovies();
