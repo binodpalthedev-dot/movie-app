@@ -154,7 +154,7 @@ const SignIn = () => {
             <form onSubmit={handleSubmit} noValidate>
               {/* Email */}
               <div className="mb-3">
-                <label className="form-label">Email</label>
+                <label className="form-label text-white">Email</label>
                 <input
                   type="email"
                   name="email"
@@ -170,9 +170,9 @@ const SignIn = () => {
                 )}
               </div>
 
-              {/* Password with toggle 👁️ */}
+              {/* Password with toggle */}
               <div className="mb-3 position-relative">
-                <label className="form-label">Password</label>
+                <label className="form-label text-white">Password</label>
                 <div className="input-group">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -186,7 +186,7 @@ const SignIn = () => {
                   />
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-light"
                     onClick={() => setShowPassword((prev) => !prev)}
                     tabIndex={-1}
                   >
@@ -211,7 +211,7 @@ const SignIn = () => {
                   id="rememberMe"
                   disabled={loading}
                 />
-                <label className="form-check-label" htmlFor="rememberMe">
+                <label className="form-check-label text-white" htmlFor="rememberMe">
                   Remember me
                 </label>
               </div>
