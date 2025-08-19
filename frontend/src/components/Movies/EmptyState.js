@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { LogOut } from 'lucide-react';
 
 const EmptyState = () => {
   const navigate = useNavigate();
@@ -17,11 +18,11 @@ const EmptyState = () => {
         {/* Logout button - top right */}
         <div className="position-absolute top-0 end-0 m-4">
           <button 
-            className="btn btn-outline-light"
+            className="btn logout-btn"
             onClick={handleLogout}
           >
-            <i className="fas fa-sign-out-alt me-2"></i>
-            Logout
+            <span>Logout</span>
+            <LogOut size={18}/>
           </button>
         </div>
 
