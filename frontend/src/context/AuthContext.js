@@ -9,20 +9,26 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const isLoading = useRef(false);
-  const justLoggedIn = useRef(false); // Track recent login
+  const justLoggedIn = useRef(false);
 
-  // Check if JWT cookie exists
   const hasJWTCookie = () => {
     if (typeof document === 'undefined') return false;
-    return document.cookie.split(';').some(cookie => 
-      cookie.trim().startsWith('jwt=') && cookie.trim().length > 4
-    );
+    const cookies = document.cookie;
+    console.log('All cookies:', cookies);
+    
+    const hasJWT = cookies.split(';').some(cookie => {
+      const trimmed = cookie.trim();
+      console.log('Checking cookie:', trimmed);
+      return trimmed.startsWith('jwt=') && trimmed.length > 4;
+    });
+    
+    console.log('Has JWT cookie:', hasJWT);
+    return hasJWT;
   };
 
   useEffect(() => {
     if (isLoading.current) return;
     
-    // Skip getMe call if user just logged in
     if (justLoggedIn.current) {
       justLoggedIn.current = false;
       setInitializing(false);
@@ -33,8 +39,8 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
-        // Only make API call if cookie exists
         if (!hasJWTCookie()) {
+          console.log('No JWT cookie found');
           setUser(null);
           setIsAuthenticated(false);
           setInitializing(false);
@@ -42,11 +48,16 @@ export const AuthProvider = ({ children }) => {
           return;
         }
 
+        console.log('Making getMe API call...');
         const data = await authService.getMe();
+        console.log('getMe response:', data);
+        
         if (data && data.user) {
+          console.log('Setting user:', data.user);
           setUser(data.user);
           setIsAuthenticated(true);
         } else {
+          console.log('No user data in response');
           setUser(null);
           setIsAuthenticated(false);
         }
@@ -61,7 +72,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchUser();
-  }, []); // didFetch.current hataya
+  }, []);
 
   const signIn = async (email, password, remember) => {
     try {
@@ -69,7 +80,7 @@ export const AuthProvider = ({ children }) => {
       if (data && data.user) {
         setUser(data.user);
         setIsAuthenticated(true);
-        justLoggedIn.current = true; // Set flag to skip next getMe call
+        justLoggedIn.current = true;
       }
       return data;
     } catch (error) {
@@ -86,11 +97,10 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
       isLoading.current = false;
-      justLoggedIn.current = false; // Reset flag on logout
+      justLoggedIn.current = false;
     }
   };
 
-  // Manual refresh function
   const refreshAuth = async () => {
     if (isLoading.current) return;
     
