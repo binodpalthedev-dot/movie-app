@@ -19,37 +19,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (didFetch.current || isLoading.current) return;
-    
-    didFetch.current = true;
-    isLoading.current = true;
+  if (didFetch.current || isLoading.current) return;
 
-    const fetchUser = async () => {
-      try {
-        // Only make API call if cookie exists
-        if (!hasJWTCookie()) {
-          setUser(null);
-          setIsAuthenticated(false);
-          setInitializing(false);
-          isLoading.current = false;
-          return;
-        }
+  didFetch.current = true;
+  isLoading.current = true;
 
-        const data = await authService.getMe();
-        setUser(data.user);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setUser(null);
-        setIsAuthenticated(false);
-      } finally {
-        setInitializing(false);
-        isLoading.current = false;
-      }
-    };
+  const fetchUser = async () => {
+    try {
+      const data = await authService.getMe();
+      setUser(data.user);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setInitializing(false);
+      isLoading.current = false;
+    }
+  };
 
-    fetchUser();
-  }, []);
+  fetchUser();
+}, []);
 
   const signIn = async (email, password, remember) => {
     try {
