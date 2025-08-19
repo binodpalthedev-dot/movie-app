@@ -8,20 +8,19 @@ export const AuthProvider = ({ children }) => {
   const [initializing, setInitializing] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const didFetch = useRef(false);
   const isLoading = useRef(false);
 
   // Check if JWT cookie exists
   const hasJWTCookie = () => {
+    if (typeof document === 'undefined') return false;
     return document.cookie.split(';').some(cookie => 
-      cookie.trim().startsWith('jwt=')
+      cookie.trim().startsWith('jwt=') && cookie.trim().length > 4
     );
   };
 
   useEffect(() => {
-    if (didFetch.current || isLoading.current) return;
+    if (isLoading.current) return;
     
-    didFetch.current = true;
     isLoading.current = true;
 
     const fetchUser = async () => {
@@ -36,8 +35,13 @@ export const AuthProvider = ({ children }) => {
         }
 
         const data = await authService.getMe();
-        setUser(data.user);
-        setIsAuthenticated(true);
+        if (data && data.user) {
+          setUser(data.user);
+          setIsAuthenticated(true);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } catch (error) {
         console.error('Auth check failed:', error);
         setUser(null);
@@ -49,13 +53,15 @@ export const AuthProvider = ({ children }) => {
     };
 
     fetchUser();
-  }, []);
+  }, []); // didFetch.current hataya
 
   const signIn = async (email, password, remember) => {
     try {
       const data = await authService.login({ email, password, remember });
-      setUser(data.user);
-      setIsAuthenticated(true);
+      if (data && data.user) {
+        setUser(data.user);
+        setIsAuthenticated(true);
+      }
       return data;
     } catch (error) {
       throw error;
@@ -70,8 +76,6 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
-      // Reset refs for potential re-login
-      didFetch.current = false;
       isLoading.current = false;
     }
   };
@@ -82,9 +86,20 @@ export const AuthProvider = ({ children }) => {
     
     isLoading.current = true;
     try {
+      if (!hasJWTCookie()) {
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
+      }
+
       const data = await authService.getMe();
-      setUser(data.user);
-      setIsAuthenticated(true);
+      if (data && data.user) {
+        setUser(data.user);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     } catch (error) {
       console.error('Auth refresh failed:', error);
       setUser(null);
