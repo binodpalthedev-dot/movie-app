@@ -14,12 +14,13 @@ export const AuthProvider = ({ children }) => {
   const hasJWTCookie = () => {
     if (typeof document === 'undefined') return false;
     
-    // Relaxed cookie check - even if empty value exists
     const cookies = document.cookie;
-    const hasJWT = cookies.includes('jwt=');
+    // Check for jwt= with actual token value (not empty)
+    const jwtMatch = cookies.match(/jwt=([^;]+)/);
+    const hasValidJWT = jwtMatch && jwtMatch[1] && jwtMatch[1] !== '';
     
-    console.log('Cookie check result:', hasJWT);
-    return hasJWT;
+    console.log('Has valid JWT:', hasValidJWT);
+    return hasValidJWT;
   };
 
   // AuthContext mein useEffect update kar
