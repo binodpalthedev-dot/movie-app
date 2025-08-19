@@ -10,27 +10,6 @@ const MoviesPage = () => {
   const { isAuthenticated, initializing, user } = useAuth();
   const { movies, isLoading, error, refreshMovies } = useMovies();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('MoviesPage Debug Info:', {
-      isAuthenticated,
-      initializing,
-      user,
-      moviesCount: movies?.length || 0,
-      isLoading,
-      error,
-      movies: movies
-    });
-  }, [isAuthenticated, initializing, user, movies, isLoading, error]);
-
-  // Force fetch movies when component mounts and user is authenticated
-  useEffect(() => {
-    if (isAuthenticated && !initializing && refreshMovies) {
-      console.log('MoviesPage mounted, movies should auto-fetch via context');
-      // No need to manually call fetch here, context handles it
-    }
-  }, [isAuthenticated, initializing]);
-
   if (initializing) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -44,7 +23,6 @@ const MoviesPage = () => {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    console.log('User not authenticated, redirecting to login');
     return <Navigate to="/" replace />;
   }
 
@@ -60,7 +38,6 @@ const MoviesPage = () => {
           <button 
             className="btn btn-primary"
             onClick={() => {
-              console.log('Retrying fetch movies...');
               refreshMovies();
             }}
           >
@@ -84,11 +61,6 @@ const MoviesPage = () => {
     );
   }
 
-  // Debug: Log before checking movies length
-  console.log('Movies array:', movies);
-  console.log('Movies length:', movies?.length);
-  console.log('Movies type:', typeof movies);
-  console.log('Is movies array?', Array.isArray(movies));
 
   // Show empty state if no movies (with better checks)
   if (!movies || !Array.isArray(movies) || movies.length === 0) {
@@ -97,8 +69,6 @@ const MoviesPage = () => {
     );
   }
 
-  // Show movies list
-  console.log('Rendering MoviesList with', movies.length, 'movies');
   return <MoviesList />;
 };
 
