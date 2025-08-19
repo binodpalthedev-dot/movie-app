@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,26 +12,26 @@ const SignIn = () => {
   const [errorText, setErrorText] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
 
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
   // Validation functions
-  const validateEmail = useCallback((email) => {
+  const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) return 'Email is required';
     if (!emailRegex.test(email)) return 'Please enter a valid email address';
     return '';
-  }, []);
+  };
 
-  const validatePassword = useCallback((password) => {
+  const validatePassword = (password) => {
     if (!password) return 'Password is required';
     if (password.length < 6) return 'Password must be at least 6 characters long';
     return '';
-  }, []);
+  };
 
-  const validateField = useCallback((name, value) => {
+  // Real-time validation
+  const validateField = (name, value) => {
     switch (name) {
       case 'email':
         return validateEmail(value);
@@ -40,17 +40,9 @@ const SignIn = () => {
       default:
         return '';
     }
-  }, [validateEmail, validatePassword]);
+  };
 
-  // Memoized form validation to prevent unnecessary recalculations
-  const isFormValid = useMemo(() => {
-    return formData.email && 
-           formData.password && 
-           !fieldErrors.email && 
-           !fieldErrors.password;
-  }, [formData.email, formData.password, fieldErrors.email, fieldErrors.password]);
-
-  const validateForm = useCallback(() => {
+  const validateForm = () => {
     const errors = {
       email: validateEmail(formData.email),
       password: validatePassword(formData.password)
@@ -58,9 +50,9 @@ const SignIn = () => {
     
     setFieldErrors(errors);
     return !Object.values(errors).some(error => error !== '');
-  }, [formData.email, formData.password, validateEmail, validatePassword]);
+  };
 
-  const handleChange = useCallback((e) => {
+  const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
     
@@ -82,9 +74,9 @@ const SignIn = () => {
     if (errorText) {
       setErrorText('');
     }
-  }, [touched, validateField, errorText]);
+  };
 
-  const handleBlur = useCallback((e) => {
+  const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({
       ...prev,
@@ -96,45 +88,9 @@ const SignIn = () => {
       ...prev,
       [name]: error
     }));
-  }, [validateField]);
+  };
 
-  const handleTogglePassword = useCallback(() => {
-    setShowPassword(prev => !prev);
-  }, []);
-
-  const getInputClassName = useCallback((fieldName) => {
-    let className = "form-control form-control-lg signin-input";
-    
-    if (touched[fieldName]) {
-      if (fieldErrors[fieldName]) {
-        className += " is-invalid";
-      } else if (formData[fieldName]) {
-        className += " is-valid";
-      }
-    }
-    
-    return className;
-  }, [touched, fieldErrors, formData]);
-
-  const getErrorMessage = useCallback((error) => {
-    if (!error?.message) return 'Sign in failed. Please try again.';
-    
-    if (error.message.includes('invalid-email')) {
-      return 'Invalid email address';
-    } else if (error.message.includes('user-not-found')) {
-      return 'No account found with this email';
-    } else if (error.message.includes('wrong-password')) {
-      return 'Incorrect password';
-    } else if (error.message.includes('too-many-requests')) {
-      return 'Too many failed attempts. Please try again later.';
-    } else if (error.message.includes('user-disabled')) {
-      return 'This account has been disabled';
-    }
-    
-    return 'Sign in failed. Please try again.';
-  }, []);
-
-  const handleSubmit = useCallback(async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Mark all fields as touched
@@ -155,12 +111,49 @@ const SignIn = () => {
       await signIn(formData.email, formData.password, formData.remember);
       navigate('/movies', { replace: true });
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
+      // Handle specific error types
+      let errorMessage = 'Sign in failed. Please try again.';
+      
+      if (error.message) {
+        if (error.message.includes('invalid-email')) {
+          errorMessage = 'Invalid email address';
+        } else if (error.message.includes('user-not-found')) {
+          errorMessage = 'No account found with this email';
+        } else if (error.message.includes('wrong-password')) {
+          errorMessage = 'Incorrect password';
+        } else if (error.message.includes('too-many-requests')) {
+          errorMessage = 'Too many failed attempts. Please try again later.';
+        } else if (error.message.includes('user-disabled')) {
+          errorMessage = 'This account has been disabled';
+        }
+      }
+      
       setErrorText(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [formData, validateForm, signIn, navigate, getErrorMessage]);
+  };
+
+  const getInputClassName = (fieldName) => {
+    let className = "form-control form-control-lg signin-input";
+    
+    if (touched[fieldName]) {
+      if (fieldErrors[fieldName]) {
+        className += " is-invalid";
+      } else if (formData[fieldName]) {
+        className += " is-valid";
+      }
+    }
+    
+    return className;
+  };
+
+  const isFormValid = () => {
+    return formData.email && 
+           formData.password && 
+           !fieldErrors.email && 
+           !fieldErrors.password;
+  };
 
   return (
     <div className="page-background">
@@ -190,7 +183,6 @@ const SignIn = () => {
                     required
                     autoComplete="email"
                     aria-describedby={fieldErrors.email ? "email-error" : undefined}
-                    aria-invalid={!!(touched.email && fieldErrors.email)}
                   />
                   {touched.email && !fieldErrors.email && formData.email && (
                     <div className="position-absolute top-50 end-0 translate-middle-y me-3">
@@ -209,7 +201,7 @@ const SignIn = () => {
               <div className="mb-4">
                 <div className="position-relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type="password"
                     name="password"
                     className={getInputClassName('password')}
                     placeholder="Password"
@@ -217,21 +209,9 @@ const SignIn = () => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     required
-                    autoComplete="current-password"
-                    aria-describedby={fieldErrors.password ? "password-error" : undefined}
-                    aria-invalid={!!(touched.password && fieldErrors.password)}
                   />
-                  <button
-                    type="button"
-                    className="position-absolute top-50 end-0 translate-middle-y me-3 btn btn-sm p-0 border-0 bg-transparent"
-                    onClick={handleTogglePassword}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    style={{ zIndex: 5 }}
-                  >
-                    <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}></i>
-                  </button>
                   {touched.password && !fieldErrors.password && formData.password && (
-                    <div className="position-absolute top-50 translate-middle-y me-5" style={{ right: '2rem' }}>
+                    <div className="position-absolute top-50 end-0 translate-middle-y me-3">
                       <i className="fas fa-check text-success"></i>
                     </div>
                   )}
@@ -263,8 +243,8 @@ const SignIn = () => {
 
               <button
                 type="submit"
-                className={`btn btn-lg w-100 signin-btn ${!isFormValid || loading ? 'opacity-75' : ''}`}
-                disabled={loading || !isFormValid}
+                className={`btn btn-lg w-100 signin-btn ${!isFormValid() || loading ? 'opacity-75' : ''}`}
+                disabled={loading}
                 aria-describedby="submit-help"
               >
                 {loading ? (
