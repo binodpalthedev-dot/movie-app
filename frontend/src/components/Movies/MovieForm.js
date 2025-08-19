@@ -45,7 +45,6 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
     return '';
   };
 
-
   const validateImage = (file) => {
     if (!file) {
       return isEdit ? '' : 'Movie poster is required';
@@ -71,7 +70,7 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
     return '';
   };
 
-    const validateField = (name, value) => {
+  const validateField = (name, value) => {
     switch (name) {
       case 'title':
         return validateTitle(value);
@@ -102,24 +101,33 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
   };
 
   useEffect(() => {
-    if (isEdit && movieId) {
-        const movie = getMovie(movieId);
-        if (movie) {
-          if(!formData.title) {
-            setFormData(prev => ({
-              ...prev,
-              title: movie.title,
-            }));
+    const loadMovieData = async () => {
+      if (isEdit && movieId) {
+        try {
+          const movie = await getMovie(movieId);
+          if (movie) {
+            if (!formData.title) {
+              setFormData(prev => ({
+                ...prev,
+                title: movie.title,
+              }));
+            }
+            if (!formData.publishingYear) {
+              setFormData(prev => ({
+                ...prev, 
+                publishingYear: movie.publishingYear,
+              }));
+            }
+            if (!preview) setPreview(`${baseURL}/uploads/posters/${movie.poster}`);
           }
-          if(!formData.publishingYear) {
-            setFormData(prev => ({
-              ...prev, 
-              publishingYear: movie.publishingYear,
-            }));
-          }
-        if(!preview) setPreview(`${baseURL}/uploads/posters/${movie.poster}`);
+        } catch (error) {
+          console.error('Failed to load movie data:', error);
+          setErrorText('Failed to load movie data');
+        }
       }
-    }
+    };
+
+    loadMovieData();
   }, [isEdit, movieId, getMovie]);
 
   const handleChange = (e) => {
@@ -153,9 +161,13 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
     }));
   };
 
-  const handleFileSelect = (file) => {
+  const handleFileSelect = async (file) => {
     // Validate file immediately
-    if(!file) setPreview(null);
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    
     const imageError = validateImage(file);
     
     if (imageError) {
@@ -171,13 +183,25 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
     }
 
     if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
+      try {
+        const reader = new FileReader();
+        
+        // Convert FileReader to Promise
+        const readFileAsync = () => {
+          return new Promise((resolve, reject) => {
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        };
+
+        const result = await readFileAsync();
+        
         setFormData(prev => ({
           ...prev,
           poster: file
         }));
-        setPreview(e.target.result);
+        setPreview(result);
         
         // Clear poster fieldErrors
         setFieldErrors(prev => ({
@@ -188,21 +212,26 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
           ...prev,
           poster: true
         }));
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error reading file:', error);
+        setFieldErrors(prev => ({
+          ...prev,
+          poster: 'Error reading file'
+        }));
+      }
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    handleFileSelect(file);
+    await handleFileSelect(file);
   };
 
-  const handleFileInput = (e) => {
+  const handleFileInput = async (e) => {
     const file = e.target.files[0];
-    handleFileSelect(file);
+    await handleFileSelect(file);
   };
 
   const handleSubmit = async (e) => {
@@ -218,7 +247,10 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
     if (!validateForm()) {
       return;
     }
+    
     setLoading(true);
+    setErrorText('');
+    
     const data = new FormData();
     data.append("title", formData.title);
     data.append("publishingYear", formData.publishingYear);
@@ -232,26 +264,29 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
       } else {
         await addMovie(data);
       }
-      navigate('/movies');
+      navigate('/movies', { replace: true });
     } catch (error) {
       console.error('Form submission failed:', error);
+      setErrorText(error.message || 'Failed to save movie. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/movies');
+    navigate('/movies', { replace: true });
   };
 
-  const handleDelete = async() => {
+  const handleDelete = async () => {
     if (isEdit && movieId) {
-      if(window.confirm("Are you sure you want to delte this movie?")) {
+      if (window.confirm("Are you sure you want to delete this movie?")) {
+        setLoading(true);
         try {
           await deleteMovie(movieId);
-          navigate('/movies');
+          navigate('/movies', { replace: true });
         } catch (error) {
           console.error('Record deletion failed:', error);
+          setErrorText(error.message || 'Failed to delete movie. Please try again.');
         } finally {
           setLoading(false);
         }
@@ -299,6 +334,13 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
             {isEdit ? 'Edit' : 'Create a new movie'}
           </h2>
           
+          {errorText && (
+            <div className="alert alert-danger" role="alert">
+              <i className="fas fa-exclamation-triangle me-2"></i>
+              {errorText}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-6">
@@ -317,7 +359,7 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
                       src={preview} 
                       alt="Movie poster preview" 
                       className="preview-image"
-                      crossOrigin='true'
+                      crossOrigin='anonymous'
                     />
                   ) : (
                     <>
@@ -345,28 +387,29 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
               
               <div className="col-md-6">
                 <div className="my-2">
-                    <input 
-                      type="text" 
-                      name="title"
-                      className={getInputClassName('title')}
-                      placeholder="Title *"
-                      value={formData.title}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      maxLength="100"
-                    />
-                    {touched.title && !fieldErrors.title && formData.title && (
-                      <div className="position-absolute top-50 end-0 translate-middle-y my-3">
-                        <i className="fas fa-check text-success"></i>
-                      </div>
-                    )}
+                  <input 
+                    type="text" 
+                    name="title"
+                    className={getInputClassName('title')}
+                    placeholder="Title *"
+                    value={formData.title}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    maxLength="100"
+                  />
+                  {touched.title && !fieldErrors.title && formData.title && (
+                    <div className="position-absolute top-50 end-0 translate-middle-y my-3">
+                      <i className="fas fa-check text-success"></i>
+                    </div>
+                  )}
                 </div>
                 {fieldErrors.title && touched.title && (
-                    <div className="invalid-feedback d-block">
-                      <i className="fas fa-exclamation-circle me-1"></i>
-                      {fieldErrors.title}
-                    </div>
+                  <div className="invalid-feedback d-block">
+                    <i className="fas fa-exclamation-circle me-1"></i>
+                    {fieldErrors.title}
+                  </div>
                 )}
+                
                 <div className="my-2">
                   <div className="position-relative">
                     <input 
@@ -413,14 +456,16 @@ const MovieForm = ({ isEdit = false, movieId = null }) => {
                   >
                     {loading ? 'Saving...' : (isEdit ? 'Update' : 'Submit')}
                   </button>
-                  { isEdit && <button 
-                    type="button" 
-                    className="btn btn-danger"
-                    onClick={handleDelete}
-                  >
-                    Delete Movie ?
-                  </button>
-                  }
+                  {isEdit && (
+                    <button 
+                      type="button" 
+                      className="btn btn-danger"
+                      onClick={handleDelete}
+                      disabled={loading}
+                    >
+                      {loading ? 'Deleting...' : 'Delete Movie'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

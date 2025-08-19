@@ -23,7 +23,7 @@ const MoviesPage = () => {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    // return <Navigate to="/" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // Show error state if there's an error
