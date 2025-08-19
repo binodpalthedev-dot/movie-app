@@ -160,7 +160,7 @@ const SignIn = () => {
       <div className="signin-container">
         <div className="card signin-card">
           <div className="card-body p-5">
-            <h2 className="signin-title">Sign in</h2>
+            <h2 className="signin-title">Signs in</h2>
             
             {errorText && (
               <div className="alert alert-danger" role="alert">
