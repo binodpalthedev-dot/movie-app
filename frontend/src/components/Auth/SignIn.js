@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -131,11 +131,14 @@ const SignIn = () => {
     [touched, fieldErrors, formData]
   );
 
-  const isFormValid = formData.email.trim() !== "" &&
-    formData.password.trim() !== "" &&
-    !fieldErrors.email &&
-    !fieldErrors.password;
-
+  const isFormValid = useMemo(() => {
+    return (
+      formData.email &&
+      formData.password &&
+      !fieldErrors.email &&
+      !fieldErrors.password
+    );
+  }, [formData, fieldErrors]);
 
   return (
     <div className="page-background">
@@ -217,7 +220,7 @@ const SignIn = () => {
               <button
                 type="submit"
                 className="signin-btn w-100"
-                disabled={loading || !isFormValid}
+                disabled={loading}
               >
                 {loading ? "Signing in..." : "Sign In"}
               </button>
