@@ -27,7 +27,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 200px;
+  height: 180px;
   background: linear-gradient(135deg, rgba(45, 90, 123, 0.3), rgba(15, 32, 39, 0.3));
   border-radius: 50% 50% 0 0;
   transform: scale(1.5) translateY(50px);
