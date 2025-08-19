@@ -18,7 +18,7 @@ const setTokenCookie = (res, token, remember = false) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
   res.cookie('jwt', token, {
-    httpOnly: true,
+    httpOnly: false,
     secure: true,
     sameSite: isProduction ? 'None' : 'Lax',
     maxAge,
@@ -30,7 +30,7 @@ const clearTokenCookie = (res) => {
   const isProduction = process.env.NODE_ENV === 'production';
   
   res.cookie('jwt', '', {
-    httpOnly: true,
+    httpOnly: false,
     secure: true,
     sameSite: isProduction ? 'None' : 'Lax',
     expires: new Date(0),

@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   // Check if JWT cookie exists
   const hasJWTCookie = () => {
+    console.log(object);
     return document.cookie.split(';').some(cookie => 
       cookie.trim().startsWith('jwt=')
     );
