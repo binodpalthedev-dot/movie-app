@@ -19,7 +19,7 @@ const setTokenCookie = (res, token, remember = false) => {
 
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: truw,
+    secure: true,
     sameSite: isProduction ? 'None' : 'Lax',
     maxAge,
     path: '/'
