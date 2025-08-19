@@ -132,13 +132,14 @@ const SignIn = () => {
   );
 
   const isFormValid = useMemo(() => {
-    return (
-      formData.email &&
-      formData.password &&
-      !fieldErrors.email &&
-      !fieldErrors.password
-    );
-  }, [formData, fieldErrors]);
+  return (
+    formData.email &&
+    formData.password &&
+    (!touched.email || !fieldErrors.email) &&
+    (!touched.password || !fieldErrors.password)
+  );
+}, [formData, fieldErrors, touched]);
+
 
   return (
     <div className="page-background">
