@@ -27,13 +27,13 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       try {
         // Only make API call if cookie exists
-        if (!hasJWTCookie()) {
-          setUser(null);
-          setIsAuthenticated(false);
-          setInitializing(false);
-          isLoading.current = false;
-          return;
-        }
+        // if (!hasJWTCookie()) {
+        //   setUser(null);
+        //   setIsAuthenticated(false);
+        //   setInitializing(false);
+        //   isLoading.current = false;
+        //   return;
+        // }
 
         const data = await authService.getMe();
         setUser(data.user);
