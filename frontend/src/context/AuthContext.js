@@ -26,55 +26,60 @@ export const AuthProvider = ({ children }) => {
     return hasJWT;
   };
 
-  useEffect(() => {
-    if (isLoading.current) return;
-    
-    if (justLoggedIn.current) {
-      justLoggedIn.current = false;
-      setInitializing(false);
-      return;
-    }
-    
-    isLoading.current = true;
+  // AuthContext mein useEffect update kar
+useEffect(() => {
+  if (isLoading.current) return;
+  
+  if (justLoggedIn.current) {
+    justLoggedIn.current = false;
+    setInitializing(false);
+    return;
+  }
+  
+  isLoading.current = true;
 
-    const fetchUser = async () => {
-      try {
-        const jwtCookie = hasJWTCookie();
-        if (!jwtCookie) {
-          alert();
-          console.log('No JWT cookie found');
-          setUser(null);
-          setIsAuthenticated(false);
-          setInitializing(false);
-          isLoading.current = false;
-          return;
-        }
-
-        console.log('Making getMe API call...');
-        const data = await authService.getMe();
-        console.log('getMe response:', data);
-        
-        if (data && data.user) {
-          console.log('Setting user:', data.user);
-          setUser(data.user);
-          setIsAuthenticated(true);
-        } else {
-          console.log('No user data in response');
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
+  const fetchUser = async () => {
+    try {
+      if (!hasJWTCookie()) {
+        console.log('No JWT cookie found');
         setUser(null);
         setIsAuthenticated(false);
-      } finally {
         setInitializing(false);
         isLoading.current = false;
+        return;
       }
-    };
 
-    fetchUser();
-  }, []);
+      console.log('Making getMe API call...');
+      const data = await authService.getMe();
+      console.log('getMe response:', data);
+      
+      if (data && data.user) {
+        console.log('Setting user:', data.user);
+        setUser(data.user);
+        setIsAuthenticated(true);
+      } else {
+        console.log('No user data in response');
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      // Cookie hai but API fail ho rahi - don't logout immediately
+      if (hasJWTCookie()) {
+        console.log('Cookie exists but API failed, keeping logged in state');
+        setIsAuthenticated(true); // Keep logged in if cookie exists
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+    } finally {
+      setInitializing(false);
+      isLoading.current = false;
+    }
+  };
+
+  fetchUser();
+}, []);
 
   const signIn = async (email, password, remember) => {
     try {
