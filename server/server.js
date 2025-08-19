@@ -1,125 +1,41 @@
-// server/server.js
-const express = require('express');
-const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
-const bcrypt = require('bcryptjs');
-require('dotenv').config();
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 
-const authRoutes = require('./routes/authRoutes');
-const movieRoutes = require('./routes/movieRoutes');
-const errorHandler = require('./middleware/errorHandler');
-const User = require('./models/User');
-
+dotenv.config();
 const app = express();
 
-// Security middleware
-app.use(helmet());
+app.use(express.json());
+app.use(cookieParser());
 
-// Replace your current CORS configuration with this:
-app.use(cors({
-  origin: [
-    'https://movie-app-eight-lovat.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5173',
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  exposedHeaders: ['Set-Cookie']
-}));
+app.use(
+  cors({
+    origin: [
+      "https://movie-app-eight-lovat.vercel.app",
+      "http://localhost:3000",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+);
 
-// Add this middleware to handle preflight requests
+// cookies verify करने के लिए log
 app.use((req, res, next) => {
-  const allowedOrigins = [
-    'https://movie-app-eight-lovat.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ];
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
-  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-  
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-  
+  console.log("Cookies from client:", req.cookies);
   next();
 });
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100
-});
-app.use(limiter);
+import authRoutes from "./routes/auth.js";
+app.use("/api/auth", authRoutes);
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-// Static files for poster images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/movies', movieRoutes);
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-// Error handling middleware
-app.use(errorHandler);
-
-// Function to create dummy user
-const createDummyUser = async () => {
-  try {
-    // Check if dummy user already exists
-    const existingUser = await User.findOne({ email: 'test@example.com' });
-    
-    if (existingUser) {
-      console.log('✅ Dummy user already exists:', existingUser.email);
-      return;
-    }
-
-    // Create dummy user
-
-    const dummyUser = new User({
-      name: 'Test User',
-      email: 'test@example.com',
-      password: 'password123'
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(process.env.PORT || 5000, () => {
+      console.log(`Server running on port ${process.env.PORT || 5000}`);
     });
-
-    await dummyUser.save();
-    console.log('Dummy user created successfully!');
-  } catch (error) {
-    console.error('Error creating dummy user:', error.message);
-  }
-};
-
-// Database connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(async () => {
-    console.log('MongoDB Connected');
-    await createDummyUser();
   })
-  .catch(err => console.error('MongoDB connection error:', err));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  .catch((err) => console.log(err));

@@ -8,8 +8,12 @@ export const authService = {
   },
 
   login: async (credentials) => {
-    const response = await API.post('/auth/login', credentials);
-    return response.data;
+    try {
+      const response = await API.post('/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   },
 
   logout: async () => {

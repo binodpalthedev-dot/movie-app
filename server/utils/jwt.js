@@ -16,12 +16,15 @@ const setTokenCookie = (res, token, remember = false) => {
     ? 30 * 24 * 60 * 60 * 1000  // 30 days for remember me
     : 7 * 24 * 60 * 60 * 1000;  // 7 days normal (or use your default)
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'None',
+    secure: isProduction,
+    sameSite: isProduction ? 'None' : 'Lax',
     maxAge
   });
+
 };
 
 const clearTokenCookie = (res) => {
