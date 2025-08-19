@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       try {
         // Only make API call if cookie exists
+        hasJWTCookie();
         // if (!hasJWTCookie()) {
         //   setUser(null);
         //   setIsAuthenticated(false);
